@@ -35,6 +35,8 @@ struct Arguments
         port = "161";
     }
 
+    /// @brief Initializes the Arguments struct by parsing command line arguments
+    /// @return true if parsing was successful, false otherwise
     bool parse(int argc, char** argv);
 
     std::string toString() const;

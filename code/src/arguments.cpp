@@ -21,8 +21,6 @@ void assertNumeric(std::string arg, std::string optarg, bool* errFlag)
     }
 }
 
-/// @brief Initializes the Arguments struct by parsing command line arguments
-/// @return true if parsing was successful, false otherwise
 bool Arguments::parse(int argc, char** argv)
 {
     int opt;
