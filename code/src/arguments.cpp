@@ -16,7 +16,7 @@ void assertNumeric(std::string arg, std::string optarg, bool* errFlag)
 {
     if (!Utils::isNumeric(optarg))
     {
-        std::cerr << arg << " requires a number, default will be" << '\n';
+        std::cerr << arg << " requires a number, default will be used" << '\n';
         *errFlag = true;
     }
 }
@@ -53,7 +53,13 @@ bool Arguments::parse(int argc, char** argv)
             case 'i':
                 assertNumeric("-i", optarg, &errFlag);
                 if (!errFlag)
-                    this->interval = Utils::atou32(optarg);
+                {
+                    auto interval = Utils::atou32(optarg);
+                    if (interval > 0)
+                        this->interval = interval;
+                    else
+                        std::cerr << "-i must be >0, default will be used" << '\n';
+                }
                 break;
 
             case 'r':
