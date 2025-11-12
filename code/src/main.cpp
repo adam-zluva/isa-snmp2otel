@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <csignal>
+#include <unistd.h>
 
 #include "utils.hpp"
 #include "arguments.hpp"
@@ -29,14 +30,19 @@ int main(int argc, char** argv)
     if (!args.isValid())
         return 1;
 
+    
+
     Context::getInstance(&args); // to initialize Context singleton
 
+    // to make sure the program doesn't terminate unexpectedly
     std::signal(SIGINT, signalHandler);
-    std::signal(SIGTERM, signalHandler); // to make sure the program doesn't terminate unexpectedly
+    std::signal(SIGTERM, signalHandler);
 
+    Utils::log("Starting loop with interval=", args.interval);
     while (!g_stopRequested)
     {
-        continue;
+        Utils::log("Query...");
+        sleep(args.interval);
     }
 
     Utils::log("\nTerminated");
