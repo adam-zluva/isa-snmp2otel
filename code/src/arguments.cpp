@@ -16,7 +16,7 @@ void assertNumeric(std::string arg, std::string optarg, bool* errFlag)
 {
     if (!isNumeric(optarg))
     {
-        std::cerr << arg << " requires a number" << '\n';
+        std::cerr << arg << " requires a number, default will be used" << '\n';
         *errFlag = true;
     }
 }
@@ -26,10 +26,9 @@ bool Arguments::parse(int argc, char** argv)
     int opt;
     opterr = 0; // To silence the default error msg
 
-    bool errFlag = false;
-
     while ((opt = getopt(argc, argv, ARG_OPTSTRING)) != -1)
     {
+        bool errFlag = false;
         switch (opt)
         {
             case 't':
@@ -49,27 +48,30 @@ bool Arguments::parse(int argc, char** argv)
             case 'e':
                 this->endpoint = optarg;
                 this->hasEndpoint = true;
-                std::cout << "bruh";
                 break;
 
             case 'i':
                 assertNumeric("-i", optarg, &errFlag);
-                this->interval = atou32(optarg);
+                if (!errFlag)
+                    this->interval = atou32(optarg);
                 break;
 
             case 'r':
                 assertNumeric("-r", optarg, &errFlag);
-                this->retries = atou32(optarg);
+                if (!errFlag)
+                    this->retries = atou32(optarg);
                 break;
 
             case 'T':
                 assertNumeric("-T", optarg, &errFlag);
-                this->timeout = atou32(optarg);
+                if (!errFlag)
+                    this->timeout = atou32(optarg);
                 break;
 
             case 'p':
                 assertNumeric("-p", optarg, &errFlag);
-                this->port = optarg;
+                if (!errFlag)
+                    this->port = optarg;
                 break;
 
             case 'v':
@@ -83,7 +85,24 @@ bool Arguments::parse(int argc, char** argv)
         }
     }
 
-    return !errFlag && this->hasTarget && this->hasOidsFile && this->hasEndpoint;
+    return isValid();
+}
+
+bool Arguments::isValid() const {
+    return this->hasTarget && this->hasOidsFile && this->hasEndpoint;
+}
+
+std::string Arguments::invalidMessage() const {
+    std::ostringstream s;
+
+    if (!this->hasTarget)
+        s << "Target is required\n";
+    if (!this->hasOidsFile)
+        s << "OIDs file is required\n";
+    if (!this->hasEndpoint)
+        s << "Endpoint is required\n";
+
+    return s.str();
 }
 
 std::string Arguments::toString() const {

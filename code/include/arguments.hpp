@@ -39,5 +39,13 @@ struct Arguments
     /// @return true if parsing was successful, false otherwise
     bool parse(int argc, char** argv);
 
+    /// @brief Checks if the args are valid
+    /// @return true if the arguments are valid, false otherwise
+    bool isValid() const;
+
+    /// @brief Returns the reason why the arguments are invalid
+    /// @return A string describing the error
+    std::string invalidMessage() const;
+
     std::string toString() const;
 };

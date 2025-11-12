@@ -4,20 +4,22 @@
 #include <iostream>
 #include "arguments.hpp"
 
-int main(int argc, char** argv)
+Arguments parseArguments(int argc, char** argv)
 {
     Arguments arguments;
     if (!arguments.parse(argc, argv))
-    {
-        if (arguments.hasTarget == false)
-            std::cerr << "Target is required\n";
-        
-        if (arguments.hasOidsFile == false)
-            std::cerr << "OIDs file is required\n";
+        std::cerr << "Error parsing arguments:\n" << arguments.invalidMessage();
 
-        if (arguments.hasEndpoint == false)
-            std::cerr << "Endpoint is required\n";
-            
+    return arguments;
+}
+
+int main(int argc, char** argv)
+{
+    Arguments args = parseArguments(argc, argv);
+    if (!args.isValid())
         return 1;
-    }
+
+    
+
+    return 0;   
 }
