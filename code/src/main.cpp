@@ -2,7 +2,9 @@
 /// xzluva01
 
 #include <iostream>
+#include "utils.hpp"
 #include "arguments.hpp"
+#include "context.hpp"
 
 Arguments parseArguments(int argc, char** argv)
 {
@@ -19,7 +21,8 @@ int main(int argc, char** argv)
     if (!args.isValid())
         return 1;
 
-    
+    Context::getInstance(&args); // to initialize Context singleton
 
-    return 0;   
+    
+    return 0;
 }

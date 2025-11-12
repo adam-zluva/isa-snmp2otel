@@ -14,9 +14,9 @@
 /// @param errFlag Pointer to a bool flag indicating an error
 void assertNumeric(std::string arg, std::string optarg, bool* errFlag)
 {
-    if (!isNumeric(optarg))
+    if (!Utils::isNumeric(optarg))
     {
-        std::cerr << arg << " requires a number, default will be used" << '\n';
+        std::cerr << arg << " requires a number, default will be" << '\n';
         *errFlag = true;
     }
 }
@@ -53,19 +53,19 @@ bool Arguments::parse(int argc, char** argv)
             case 'i':
                 assertNumeric("-i", optarg, &errFlag);
                 if (!errFlag)
-                    this->interval = atou32(optarg);
+                    this->interval = Utils::atou32(optarg);
                 break;
 
             case 'r':
                 assertNumeric("-r", optarg, &errFlag);
                 if (!errFlag)
-                    this->retries = atou32(optarg);
+                    this->retries = Utils::atou32(optarg);
                 break;
 
             case 'T':
                 assertNumeric("-T", optarg, &errFlag);
                 if (!errFlag)
-                    this->timeout = atou32(optarg);
+                    this->timeout = Utils::atou32(optarg);
                 break;
 
             case 'p':
