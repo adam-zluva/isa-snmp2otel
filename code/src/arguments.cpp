@@ -102,27 +102,27 @@ std::string Arguments::invalidMessage() const {
     std::ostringstream s;
 
     if (!this->hasTarget)
-        s << "Target is required\n";
+        s << "Target is required" << "\n";
     if (!this->hasOidsFile)
-        s << "OIDs file is required\n";
+        s << "OIDs file is required" << "\n";
     if (!this->hasEndpoint)
-        s << "Endpoint is required\n";
+        s << "Endpoint is required" << "\n";
 
     return s.str();
 }
 
 std::string Arguments::toString() const {
     std::ostringstream s;    
-    s << "Arguments {" << '\n';
-    s << "    target = " << this->target << '\n';
-    s << "    community = " << this->community << '\n';
-    s << "    oidsFile = " << this->oidsFile << '\n';
-    s << "    endpoint = " << this->endpoint << '\n';
-    s << "    interval = " << this->interval << '\n';
-    s << "    retries = " << this->retries << '\n';
-    s << "    timeout = " << this->timeout << '\n';
-    s << "    port = " << this->port << '\n';
-    s << "    verbose = " << (this->verbose ? "true" : "false") << '\n';
+    s << "Arguments {";
+    s << " target=" << this->target << ",";
+    s << " community=" << this->community << ",";
+    s << " oidsFile=" << this->oidsFile << ",";
+    s << " endpoint=" << this->endpoint << ",";
+    s << " interval=" << this->interval << ",";
+    s << " retries=" << this->retries << ",";
+    s << " timeout=" << this->timeout << ",";
+    s << " port=" << this->port << ",";
+    s << " verbose=" << (this->verbose ? "true" : "false") << " ";
     s << "}";
 
     return s.str();

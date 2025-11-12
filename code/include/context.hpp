@@ -1,9 +1,14 @@
+/// ISA ZS 2025
+/// xzluva01
+
 #pragma once
+
+#include <vector>
+
 #include "arguments.hpp"
 
 struct Context
 {
-    const char* const APP_NAME = "snmp2otel"; // c++ grammar garbage, LET US USE RUST NEXT TIME!
     const Arguments args;
 
     static Context& getInstance(const Arguments* args = nullptr)
