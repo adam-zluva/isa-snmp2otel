@@ -38,6 +38,5 @@ public:
     }
 
 private:
-    Utils() = delete;
-    explicit Utils() = delete;
+    Utils() {}
 };

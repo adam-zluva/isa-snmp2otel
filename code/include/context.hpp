@@ -13,5 +13,5 @@ struct Context
     }
 
 private:
-    explicit Context(const Arguments& arguments) : args(arguments) { }
+    Context(const Arguments& arguments) : args(arguments) { }
 };

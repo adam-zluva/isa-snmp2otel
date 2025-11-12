@@ -18,4 +18,6 @@ public:
     /// @param oid The OID to validate
     /// @return true if the OID is valid, false otherwise
     static bool validateOID(const std::string& oid);
+private:
+    OIDReader() {}
 };
