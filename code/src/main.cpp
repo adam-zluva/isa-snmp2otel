@@ -2,9 +2,17 @@
 /// xzluva01
 
 #include <iostream>
+#include <csignal>
+
 #include "utils.hpp"
 #include "arguments.hpp"
 #include "context.hpp"
+
+static bool g_stopRequested = false;
+static void signalHandler(int)
+{
+    g_stopRequested = true;
+}
 
 Arguments parseArguments(int argc, char** argv)
 {
@@ -23,6 +31,14 @@ int main(int argc, char** argv)
 
     Context::getInstance(&args); // to initialize Context singleton
 
-    
+    std::signal(SIGINT, signalHandler);
+    std::signal(SIGTERM, signalHandler); // to make sure the program doesn't terminate unexpectedly
+
+    while (!g_stopRequested)
+    {
+        continue;
+    }
+
+    Utils::log("\nTerminated");
     return 0;
 }
