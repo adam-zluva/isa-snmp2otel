@@ -34,6 +34,9 @@ std::vector<std::string> OIDReader::readOIDsFromFile(const std::string& filename
 
 bool OIDReader::validateOID(const std::string& oid)
 {
+    if (oid.size() < 2 || oid.substr(oid.size() - 2) != ".0")
+        return false;
+
     for (char c : oid)
     {
         if (!std::isdigit(c) && c != '.')

@@ -39,7 +39,6 @@ std::optional<std::vector<std::string>> tryLoadOIDs(const std::string& file)
     }
 }
 
-
 int main(int argc, char** argv)
 {
     // Parse CLI arguments

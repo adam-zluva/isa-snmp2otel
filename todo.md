@@ -7,7 +7,7 @@
 * **M1.1**: **Nastavení** adresářů (`src`, `include`, `obj`) a `Makefile`. ✅
 * **M1.2**: **Parsvání CLI** argumentů (všech). ✅
 * **M1.3**: **Načítání OID** ze souboru (`oids_file`), filtrace komentářů. ✅
-* **M1.4**: **Hlavní smyčka** a implementace časovače (`interval`).
+* **M1.4**: **Hlavní smyčka** a implementace časovače (`interval`). ✅
 
 ---
 
@@ -36,7 +36,7 @@
 
 ## Milník 4: Testování a Dokončení
 
-* **M4.1**: **Verbose režim** (`-v`) pro ladicí výstupy.
+* **M4.1**: **Verbose režim** (`-v`) pro ladicí výstupy. ✅
 * **M4.2**: **Makefile test** cíl (`make test`).
 * **M4.3**: **Unit testy** (ASN.1 BER, CLI, OID soubor).
 * **M4.4**: **Integrační testy** (falešný SNMP/OTEL, volitelné).
