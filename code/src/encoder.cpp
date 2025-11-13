@@ -6,6 +6,8 @@
 
 #include "encoder.hpp"
 
+#define ULL_MAX 0xFFFFFFFFull
+
 Encoder::Encoder()
 {
     frames.push_back(Frame{0x00, {}}); // just for base, won't collect this
@@ -115,7 +117,8 @@ void Encoder::encodeIntegerValue(uint64_t v, std::vector<uint8_t>& out)
 
 void Encoder::encodeOIDValue(const std::string& dotted, std::vector<uint8_t>& out)
 {
-    // parse arcs
+    // oooooooof
+
     std::vector<uint32_t> arcs;
     uint64_t acc = 0;
     bool inNumber = false;
@@ -130,7 +133,7 @@ void Encoder::encodeOIDValue(const std::string& dotted, std::vector<uint8_t>& ou
         } else if (c >= '0' && c <= '9') {
             inNumber = true;
             acc = acc * 10 + static_cast<uint32_t>(c - '0');
-            if (acc > 0xFFFFFFFFull)
+            if (acc > ULL_MAX)
                 throw std::runtime_error("Encoder: OID arc too large");
         } else {
             throw std::runtime_error("Encoder: invalid OID");

@@ -13,11 +13,11 @@
 
 ## Milník 2: SNMP Klient a Protokol
 
-* **M2.1**: **ASN.1 BER** kódování/dekódování (INTEGER, OCTET STRING, OID, SEQUENCE).
-* **M2.2**: **SNMP v2c zpráva** struktura a parsování.
-* **M2.3**: **Sestavení GetRequest** PDU pro OID.
-* **M2.4**: **UDP Komunikace** (odesílání/příjem na 161).
-* **M2.5**: **Retry & Timeout** logika (`-r`, `-T`).
+* **M2.1**: **ASN.1 BER** kódování/dekódování (INTEGER, OCTET STRING, OID, SEQUENCE). ✅
+* **M2.2**: **SNMP v2c zpráva** struktura a parsování. ✅
+* **M2.3**: **Sestavení GetRequest** PDU pro OID. ✅
+* **M2.4**: **UDP Komunikace** (odesílání/příjem na 161). ✅
+* **M2.5**: **Retry & Timeout** logika (`-r`, `-T`). ✅
 * **M2.6**: **Parsvání GetResponse**, extrakce hodnoty, ověření `.0`.
 * **M2.7**: **Zpracování chyb** SNMP (např. `noSuchName`), pokračování.
 

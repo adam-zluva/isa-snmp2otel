@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 
     Context::getInstance(&args); // To initialize Context singleton
 
-    Utils::log("Running ", APP_NAME, "with arguments:");
+    Utils::log("Running ", APP_NAME, " with arguments:");
     Utils::log(args.toString());
     Utils::logSeparator();
 
@@ -78,28 +78,36 @@ int main(int argc, char** argv)
     // Main loop
     Utils::log("Starting loop with interval=", args.interval);
     Utils::logSeparator();
-    uint32_t requestId = 1;
+    uint32_t requestId = 0;
     while (!g_stopRequested)
     {
-        Utils::log("Sending SNMP request with requestId=", requestId);
-        std::vector<uint8_t> response;
-        auto requestPDU = SNMPBuilder::buildSNMPGet(args.community, requestId, oids);
-        if (!udpClient.sendAndReceive(requestPDU, response, 1000))
+        for (size_t i = 0; i < args.retries; i++)
         {
-            std::cerr << "Failed to send/receive SNMP request\n";
-        }
-        else
-        {
-            Utils::log("Received SNMP response of size ", response.size());
-            Utils::printHex(response);
+            auto requestPDU = SNMPBuilder::buildSNMPGet(args.community, requestId++, oids);
+            std::vector<uint8_t> response;
+            Utils::log("Sending SNMP request with requestId=", requestId);
+            if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
+            {
+                std::cerr << "Failed to send/receive SNMP request" << "\n";
+
+                if (i == args.retries - 1)
+                {
+                    Utils::log("Failed to reach target in ", args.retries, " retries");
+                    g_stopRequested = true;
+                }
+
+            }
+            else
+            {
+                Utils::log("Received SNMP response of size ", response.size());
+                Utils::printHex(response);
+                break;
+            }
         }
 
-        requestId++;
-        
-        Utils::logSeparator();
-        sleep(args.interval);
+        if (!g_stopRequested)
+            sleep(args.interval);
     }
 
-    udpClient.disconnect();
     return 0;
 }

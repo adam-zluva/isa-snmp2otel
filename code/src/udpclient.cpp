@@ -57,14 +57,13 @@ void UDPClient::disconnect()
     {
         ::close(sock);
         sock = -1;
+        Utils::log("UDPClient disconnected from ", address, ":", port);
     }
     if (addrInfo != nullptr)
     {
         freeaddrinfo(addrInfo);
         addrInfo = nullptr;
     }
-
-    Utils::log("UDPClient disconnected from ", address, ":", port);
 }
 
 bool UDPClient::sendAndReceive(const std::vector<uint8_t>& request,

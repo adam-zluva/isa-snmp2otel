@@ -22,7 +22,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@$(CC) $(CFLAGS) -I$(INCDIR) -c $< -o $@
 
 run: all
-	./$(TARGET) -t 127.0.0.1 -o oids.txt -e http://localhost:4318/v1/metrics
+	./$(TARGET) -t 127.0.0.1 -o data/oids.txt -e http://localhost:4318/v1/metrics -p 1161 -i 1 -v
 
 clean:
 	$(RM) -r $(OBJDIR)

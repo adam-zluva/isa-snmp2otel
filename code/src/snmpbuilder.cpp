@@ -16,7 +16,6 @@ std::vector<uint8_t> SNMPBuilder::buildSNMPGet(const std::string& community, uin
     enc.writeInteger(1);
     enc.writeOctetString(community);
 
-    // GetRequest-PDU (tag 0xA0)
     // GetRequest-PDU ::= [0] IMPLICIT SEQUENCE {
     //   request-id      INTEGER
     //   error-status    INTEGER (0)
@@ -35,7 +34,7 @@ std::vector<uint8_t> SNMPBuilder::buildSNMPGet(const std::string& community, uin
     for (const auto& oid : oids) {
         // VarBind ::= SEQUENCE {
         //   name  OBJECT IDENTIFIER,
-        //   value ANY -- pro Get je to NULL
+        //   value NULL
         // }
         enc.startSequence(TAG_SEQUENCE);
         enc.writeOID(oid);
