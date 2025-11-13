@@ -1,4 +1,4 @@
-#include "snmpbuilder.hpp";
+#include "snmpbuilder.hpp"
 
 #include "encoder.hpp"
 

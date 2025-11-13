@@ -51,6 +51,11 @@ public:
         (std::cout << ... << args) << '\n';
     }
 
+    static inline void logSeparator()
+    {
+        log("----------");
+    }
+
 private:
     Utils() {}
 };

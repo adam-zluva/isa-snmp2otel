@@ -10,6 +10,8 @@
 #include "arguments.hpp"
 #include "context.hpp"
 #include "oidreader.hpp"
+#include "udpclient.hpp"
+#include "snmpbuilder.hpp"
 
 const std::string APP_NAME = "snmp2otel";
 
@@ -48,8 +50,9 @@ int main(int argc, char** argv)
 
     Context::getInstance(&args); // To initialize Context singleton
 
-    Utils::log(APP_NAME);
+    Utils::log("Running ", APP_NAME, "with arguments:");
     Utils::log(args.toString());
+    Utils::logSeparator();
 
     // Load OIDs from file
     Utils::log("Loading OIDs from file: ", args.oidsFile);
@@ -58,19 +61,42 @@ int main(int argc, char** argv)
         return 1;
     auto oids = oidsOpt.value();
     Utils::log("Loaded OIDs: ", oids);
+    Utils::logSeparator();
     
-    // Make sure the program doesn't terminate unexpectedly
+    // So the program doesn't end unexpectedly and properly cleans up
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
 
+    // Create UDP client
+    UDPClient udpClient(args.target, args.port);
+    if (!udpClient.connect())
+    {
+        std::cerr << "Failed to connect to " << args.target << ":" << args.port << '\n';
+        return 1;
+    }
+
     // Main loop
     Utils::log("Starting loop with interval=", args.interval);
+    Utils::logSeparator();
+    uint32_t requestId = 1;
     while (!g_stopRequested)
     {
-        Utils::log("Query...");
+        Utils::log("Sending SNMP request with requestId=", requestId);
+        std::vector<uint8_t> response;
+        auto requestPDU = SNMPBuilder::buildSNMPGet(args.community, requestId, oids);
+        if (!udpClient.sendAndReceive(requestPDU, response, 1000))
+        {
+            std::cerr << "Failed to send/receive SNMP request\n";
+        }
+        else
+        {
+            Utils::log("Received SNMP response of size ", response.size());
+        }
+
+        requestId++;
         sleep(args.interval);
     }
 
-    Utils::log("\nTerminated");
+    udpClient.disconnect();
     return 0;
 }
