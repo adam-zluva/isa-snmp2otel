@@ -91,9 +91,12 @@ int main(int argc, char** argv)
         else
         {
             Utils::log("Received SNMP response of size ", response.size());
+            Utils::printHex(response);
         }
 
         requestId++;
+        
+        Utils::logSeparator();
         sleep(args.interval);
     }
 

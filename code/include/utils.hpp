@@ -7,6 +7,7 @@
 #include <string>
 #include <cstdint>
 #include <cstdlib>
+#include <iomanip>
 #include <vector>
 #include "context.hpp"
 
@@ -54,6 +55,30 @@ public:
     static inline void logSeparator()
     {
         log("----------");
+    }
+
+    
+    static inline void printHex(const std::vector<uint8_t>& data)
+    {
+        if (!Context::getInstance().args.verbose) return;
+        std::cout << "Hex dump (" << data.size() << " bytes):\n";
+
+        for (std::size_t i = 0; i < data.size(); ++i)
+        {
+            std::cout
+                << std::hex
+                << std::setw(2)
+                << std::setfill('0')
+                << std::uppercase
+                << (int)data[i]
+                << " ";
+
+            // print it out in rows of 16 bytes
+            if ((i + 1) % 16 == 0)
+                std::cout << "\n";
+        }
+
+        std::cout << std::dec << "\n"; // back to decimal output
     }
 
 private:
