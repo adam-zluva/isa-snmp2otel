@@ -11,7 +11,7 @@
 #include "context.hpp"
 #include "oidreader.hpp"
 #include "udpclient.hpp"
-#include "snmpbuilder.hpp"
+#include "snmphelper.hpp"
 
 const std::string APP_NAME = "snmp2otel";
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
     {
         for (size_t i = 0; i < args.retries; i++)
         {
-            auto requestPDU = SNMPBuilder::buildSNMPGet(args.community, requestId++, oids);
+            auto requestPDU = SNMPHelper::buildSNMPGet(args.community, requestId++, oids);
             std::vector<uint8_t> response;
             Utils::log("Sending SNMP request with requestId=", requestId);
             if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
@@ -100,7 +100,10 @@ int main(int argc, char** argv)
             else
             {
                 Utils::log("Received SNMP response of size ", response.size());
-                Utils::printHex(response);
+
+                auto snmpResponse = SNMPHelper::decodeResponse(response);
+                Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
+
                 break;
             }
         }

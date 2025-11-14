@@ -11,5 +11,6 @@
 #define TAG_GET_RQ_PDU      0xA0
 #define TAG_GET_RSP_PDU     0xA2
 #define TAG_GAUGE           0x42
+#define TAG_TIMETICKS       0x43
 
 #define ULL_MAX             0xFFFFFFFFull

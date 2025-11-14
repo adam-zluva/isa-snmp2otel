@@ -57,28 +57,27 @@ public:
         log("----------");
     }
 
-    
+    static inline std::string hexVectorToString(const std::vector<uint8_t>& data)
+    {
+        std::ostringstream s;
+        s << std::hex << std::setfill('0');
+        for (std::size_t i = 0; i < data.size(); ++i)
+        {
+            s << std::setw(2) << std::uppercase << (int)data[i] << " ";
+
+            // print it out in rows of 16 bytes
+            if ((i + 1) % 16 == 0)
+                s << "\n";
+        }
+        return s.str();
+    }
+
+
     static inline void printHex(const std::vector<uint8_t>& data)
     {
         if (!Context::getInstance().args.verbose) return;
         std::cout << "Hex dump (" << data.size() << " bytes):\n";
-
-        for (std::size_t i = 0; i < data.size(); ++i)
-        {
-            std::cout
-                << std::hex
-                << std::setw(2)
-                << std::setfill('0')
-                << std::uppercase
-                << (int)data[i]
-                << " ";
-
-            // print it out in rows of 16 bytes
-            if ((i + 1) % 16 == 0)
-                std::cout << "\n";
-        }
-
-        std::cout << std::dec << "\n"; // back to decimal output
+        std::cout << hexVectorToString(data) << "\n";
     }
 
 private:
