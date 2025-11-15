@@ -13,4 +13,6 @@
 #define TAG_GAUGE           0x42
 #define TAG_TIMETICKS       0x43
 
+#define TAG_NO_SUCH_OBJECT  0x80
+
 #define ULL_MAX             0xFFFFFFFFull

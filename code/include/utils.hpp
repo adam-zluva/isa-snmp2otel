@@ -57,13 +57,19 @@ public:
         log("----------");
     }
 
+    static inline std::string intToHexString(uint64_t value)
+    {
+        std::ostringstream s;
+        s << std::hex << std::setw(2) << std::setfill('0') << std::uppercase << value;
+        return s.str();
+    }
+
     static inline std::string hexVectorToString(const std::vector<uint8_t>& data)
     {
         std::ostringstream s;
-        s << std::hex << std::setfill('0');
         for (std::size_t i = 0; i < data.size(); ++i)
         {
-            s << std::setw(2) << std::uppercase << (int)data[i] << " ";
+            s << intToHexString(data[i]) << " ";
 
             // print it out in rows of 16 bytes
             if ((i + 1) % 16 == 0)

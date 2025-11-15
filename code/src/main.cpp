@@ -79,36 +79,32 @@ int main(int argc, char** argv)
     Utils::log("Starting loop with interval=", args.interval);
     Utils::logSeparator();
     uint32_t requestId = 0;
-    while (!g_stopRequested)
+    size_t attempt = 0;
+    while (!g_stopRequested && attempt <  args.retries)
     {
-        for (size_t i = 0; i < args.retries; i++)
-        {
-            auto requestPDU = SNMPHelper::buildSNMPGet(args.community, requestId++, oids);
+        auto requestPDU = SNMPHelper::buildSNMPGet(args.community, requestId++, oids);
             std::vector<uint8_t> response;
             Utils::log("Sending SNMP request with requestId=", requestId);
             if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
             {
+                attempt++;
                 std::cerr << "Failed to send/receive SNMP request" << "\n";
 
-                if (i == args.retries - 1)
+                if (attempt >= args.retries)
                 {
                     Utils::log("Failed to reach target in ", args.retries, " retries");
-                    g_stopRequested = true;
                 }
-
             }
             else
             {
+                attempt = 0;
                 Utils::log("Received SNMP response of size ", response.size());
 
                 auto snmpResponse = SNMPHelper::decodeResponse(response);
                 Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
-
-                break;
             }
-        }
 
-        if (!g_stopRequested)
+        if (!g_stopRequested && attempt < args.retries)
             sleep(args.interval);
     }
 

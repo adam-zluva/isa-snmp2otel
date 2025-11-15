@@ -40,7 +40,8 @@ std::vector<uint8_t> SNMPHelper::buildSNMPGet(const std::string& community, uint
     // VarBindList ::= SEQUENCE OF VarBind
     enc.startSequence(TAG_SEQUENCE);
 
-    for (const auto& oid : oids) {
+    for (const auto& oid : oids)
+    {
         // VarBind ::= SEQUENCE {
         //   name  OBJECT IDENTIFIER,
         //   value NULL
@@ -147,16 +148,22 @@ std::string SNMPVarBind::toString() const
     std::ostringstream ss;
     ss << oid << " = ";
 
-    if (tag == TAG_NULL) {
+    if (tag == TAG_NULL)
+    {
         ss << "NULL";
-    } else if (tag == TAG_OCTET_STRING) {
+    } else if (tag == TAG_OCTET_STRING)
+    {
         ss << '"' << value << '"';
     } else if (tag == TAG_INTEGER || tag == TAG_GAUGE || tag == TAG_TIMETICKS || tag == TAG_OID)
     {
         ss << value;
-    } else {
-        // unknown tag: print tag and raw value
-        ss << "[tag=0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(tag) << std::dec << "] " << value;
+    } else if (tag == TAG_NO_SUCH_OBJECT)
+    {
+        ss << "noSuchObject";
+    } else
+    {
+        // edge case print tag and hex value
+        ss << "[tag=0x" << Utils::intToHexString(tag) << "] " << value;
     }
 
     return ss.str();

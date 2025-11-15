@@ -18,8 +18,8 @@
 * **M2.3**: **Sestavení GetRequest** PDU pro OID. ✅
 * **M2.4**: **UDP Komunikace** (odesílání/příjem na 161). ✅
 * **M2.5**: **Retry & Timeout** logika (`-r`, `-T`). ✅
-* **M2.6**: **Parsvání GetResponse**, extrakce hodnoty, ověření `.0`.
-* **M2.7**: **Zpracování chyb** SNMP (např. `noSuchName`), pokračování.
+* **M2.6**: **Parsvání GetResponse**, extrakce hodnoty, ověření `.0`. ✅
+* **M2.7**: **Zpracování chyb** SNMP (např. `noSuchName`), pokračování. ✅
 
 ---
 
