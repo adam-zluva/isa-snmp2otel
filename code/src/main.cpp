@@ -12,6 +12,7 @@
 #include "oidreader.hpp"
 #include "udpclient.hpp"
 #include "snmphelper.hpp"
+#include "otel_exporter.hpp"
 
 const std::string APP_NAME = "snmp2otel";
 
@@ -61,6 +62,22 @@ int main(int argc, char** argv)
         return 1;
     auto oids = oidsOpt.value();
     Utils::log("Loaded OIDs: ", oids);
+    // Filter to scalar OIDs ending with .0 as required
+    std::vector<std::string> scalarOids;
+    for (const auto &o : oids)
+    {
+        if (o.size() >= 2 && o.rfind(".0") == o.size() - 2)
+            scalarOids.push_back(o);
+        else
+            Utils::log("Ignoring non-scalar OID (not ending with .0): ", o);
+    }
+
+    if (scalarOids.empty())
+    {
+        std::cerr << "No scalar OIDs (ending with .0) to poll.\n";
+        return 1;
+    }
+    oids = scalarOids;
     Utils::logSeparator();
     
     // So the program doesn't end unexpectedly and properly cleans up
@@ -73,6 +90,18 @@ int main(int argc, char** argv)
     {
         std::cerr << "Failed to connect to " << args.target << ":" << args.port << '\n';
         return 1;
+    }
+
+    // Create OTEL exporter on stack (std::optional) if endpoint provided
+    std::optional<OTELExporter> exporter;
+    if (args.hasEndpoint)
+    {
+        exporter.emplace(args.endpoint);
+        if (!exporter->isValid())
+        {
+            std::cerr << "Invalid OTEL endpoint: " << args.endpoint << '\n';
+            exporter.reset();
+        }
     }
 
     // Main loop
@@ -102,6 +131,14 @@ int main(int argc, char** argv)
 
                 auto snmpResponse = SNMPHelper::decodeResponse(response);
                 Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
+
+                if (exporter.has_value())
+                {
+                    if (!exporter->exportMetrics(snmpResponse, args.target))
+                    {
+                        std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
+                    }
+                }
             }
 
         if (!g_stopRequested && attempt < args.retries)
