@@ -14,6 +14,8 @@
 #include "snmphelper.hpp"
 #include "otelexporter.hpp"
 
+#define HELP_STRING "snmp2otel -t <target> -o <oids_file> -e <otel_endpoint> [-C <community>] [-i <seconds>] [-r <count>] [-T <milliseconds>] [-p <snmp_port>] [-v]"
+
 static bool g_stopRequested = false; // signals to stop the send loop
 
 /// @brief Signal handler to intercept ctrl+c signals
@@ -52,7 +54,10 @@ int main(int argc, char** argv)
     // Parse CLI arguments
     auto args = parseArguments(argc, argv);
     if (!args.isValid())
+    {
+        std::cerr << "Usage: " << HELP_STRING << "\n";
         return 1;
+    }
 
     Context::getInstance(&args); // To initialize Context singleton
 
