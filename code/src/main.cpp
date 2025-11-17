@@ -99,31 +99,38 @@ int main(int argc, char** argv)
     size_t attempt = 0;
     while (!g_stopRequested && attempt <  args.retries)
     {
-        auto requestPDU = SNMPHelper::buildSNMPGet(args.community, requestId++, oids);
-        std::vector<uint8_t> response;
-        Utils::log("Sending SNMP request with requestId=", requestId);
-        if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
+        try
         {
+            auto requestPDU = SNMPHelper::buildSNMPGet(args.community, requestId++, oids);
+            std::vector<uint8_t> response;
+            Utils::log("Sending SNMP request with requestId=", requestId);
+            if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
+            {
+                attempt++;
+                std::cerr << "Failed to send/receive SNMP request" << "\n";
+
+                if (attempt >= args.retries)
+                {
+                    Utils::log("Failed to reach target in ", args.retries, " retries");
+                }
+            }
+            else
+            {
+                attempt = 0;
+                Utils::log("Received SNMP response of size ", response.size());
+
+                auto snmpResponse = SNMPHelper::decodeResponse(response);
+                Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
+
+                if (!exporter.exportMetrics(snmpResponse, args.target, args.timeout))
+                {
+                    std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
+                }
+            }
+        } catch (const std::exception& ex) 
+        {
+            std::cerr << "Error during SNMP request/response: " << ex.what() << "\n";
             attempt++;
-            std::cerr << "Failed to send/receive SNMP request" << "\n";
-
-            if (attempt >= args.retries)
-            {
-                Utils::log("Failed to reach target in ", args.retries, " retries");
-            }
-        }
-        else
-        {
-            attempt = 0;
-            Utils::log("Received SNMP response of size ", response.size());
-
-            auto snmpResponse = SNMPHelper::decodeResponse(response);
-            Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
-
-            if (!exporter.exportMetrics(snmpResponse, args.target, args.timeout))
-            {
-                std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
-            }
         }
 
         if (!g_stopRequested && attempt < args.retries)
