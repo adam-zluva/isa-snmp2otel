@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+
 #include "tcpclient.hpp"
 #include "snmphelper.hpp"
 
@@ -13,14 +14,23 @@ public:
     OTELExporter(const std::string& endpoint);
     ~OTELExporter();
 
-    bool isValid() const;
+    bool isValid() const { return valid; }
 
-    // Export metrics for a single SNMPResponse. `target` is the SNMP device address
+    /// @brief Connects the client if it isnt
+    /// @return true if connected, false otherwise
+    bool ensureConnection();
+
+    /// @brief Sends the SNMP values to OTEL endpoint
+    /// @param resp SNMP response
+    /// @param target the SNMP agent address
+    /// @return true on success, false on failure
     bool exportMetrics(const SNMPResponse& resp, const std::string& target);
 
 private:
+    /// @brief Parses the OTEL endpoint address
+    /// @param endpoint the endpoint address
+    /// @return true on success, false on failure
     bool parseEndpoint(const std::string& endpoint);
-    bool ensureConnected();
 
     std::string endpoint;
     std::string host;

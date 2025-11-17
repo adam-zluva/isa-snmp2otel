@@ -22,19 +22,12 @@ OTELExporter::~OTELExporter()
     client.disconnect();
 }
 
-bool OTELExporter::isValid() const
-{
-    return valid;
-}
-
 bool OTELExporter::parseEndpoint(const std::string& endpoint)
 {
-
-    // Require full http:// endpoint like: http://host:port/path or http://host/path
     const std::string http = "http://";
     if (endpoint.rfind(http, 0) != 0)
     {
-        std::cerr << "OTelExporter: endpoint must start with 'http://': " << endpoint << "\n";
+        std::cerr << "Endpoint must start with 'http://': " << endpoint << "\n";
         return false;
     }
 
@@ -67,9 +60,8 @@ bool OTELExporter::parseEndpoint(const std::string& endpoint)
     return true;
 }
 
-bool OTELExporter::ensureConnected()
+bool OTELExporter::ensureConnection()
 {
-    // attempt connect on each call if not connected
     return client.connect(host, port);
 }
 
@@ -89,7 +81,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
     if (!valid)
         return false;
 
-    if (!ensureConnected())
+    if (!ensureConnection())
     {
         std::cerr << "Failed to connect to OTEL endpoint" << "\n";
         return false;
@@ -159,11 +151,11 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
 
     // Build HTTP request
     std::ostringstream req;
-    req << "POST " << path << " HTTP/1.1\r\n";
+    req << "POST " << path << " HTTP/1.1" << "\r\n";
     req << "Host: " << host << "\r\n";
-    req << "Content-Type: application/json; charset=utf-8\r\n";
+    req << "Content-Type: application/json; charset=utf-8" << "\r\n";
     req << "Content-Length: " << body.size() << "\r\n";
-    req << "Connection: close\r\n";
+    req << "Connection: close" << "\r\n";
     req << "\r\n";
     req << body;
 
@@ -171,7 +163,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
 
     if (!client.sendAll(requestStr))
     {
-        std::cerr << "OTelExporter: failed to send HTTP request\n";
+        std::cerr << "OTEL exporter failed to send HTTP request" << "\n";
         client.disconnect();
         return false;
     }
@@ -179,15 +171,11 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
     std::string response;
     if (!client.receiveAll(response, 2000))
     {
-        std::cerr << "OTelExporter: failed to read HTTP response\n";
+        std::cerr << "OTEL exproter failed to read HTTP response" << "\n";
         client.disconnect();
         return false;
     }
 
-    Utils::log("OTelExporter: received response:\n", response);
-
-    // Close connection after single request
-    client.disconnect();
-
+    Utils::log("OTEL received response:\n", response);
     return true;
 }

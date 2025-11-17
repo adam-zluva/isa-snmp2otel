@@ -34,12 +34,12 @@ std::vector<std::string> OIDReader::readOIDsFromFile(const std::string& filename
 
 bool OIDReader::validateOID(const std::string& oid)
 {
-    if (oid.size() < 2 || oid.substr(oid.size() - 2) != ".0")
+    if (oid.size() < 2 || oid.substr(oid.size() - 2) != ".0") // filter out non scalar OIDs
         return false;
 
     for (char c : oid)
     {
-        if (!std::isdigit(c) && c != '.')
+        if (!std::isdigit(c) && c != '.') // only allow numeric OIDs (or dots...)
             return false;
     }
 

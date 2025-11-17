@@ -21,10 +21,10 @@ TCPClient::~TCPClient()
     disconnect();
 }
 
-bool TCPClient::connect(const std::string& host_, const std::string& port_)
+bool TCPClient::connect(const std::string& host, const std::string& port)
 {
-    host = host_;
-    port = port_;
+    if (isConnected())
+        return true; // already connected
 
     struct addrinfo hints {};
     hints.ai_family = AF_INET;
@@ -77,9 +77,9 @@ void TCPClient::disconnect()
 
 bool TCPClient::sendAll(const std::string& data)
 {
-    if (sock < 0)
+    if (!isConnected())
     {
-        std::cerr << "TCPClient not connected\n";
+        std::cerr << "TCPClient not connected" << "\n";
         return false;
     }
 
@@ -101,49 +101,42 @@ bool TCPClient::sendAll(const std::string& data)
     return true;
 }
 
-bool TCPClient::receiveAll(std::string& out, int timeoutMs)
+bool TCPClient::receiveAll(std::string& out, uint32_t timeout)
 {
     out.clear();
-    if (sock < 0)
+    if (!isConnected())
     {
-        std::cerr << "TCPClient not connected\n";
+        std::cerr << "TCPClient not connected" << "\n";
         return false;
     }
 
-    // set recv timeout
+    // timeout value
     struct timeval tv {};
-    tv.tv_sec = timeoutMs / 1000;
-    tv.tv_usec = (timeoutMs % 1000) * 1000;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
+
     if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
     {
         std::cerr << "setsockopt failed: " << std::strerror(errno) << "\n";
         return false;
     }
 
-    const size_t BUF_SIZE = 4096;
-    char buffer[BUF_SIZE];
-
-    while (true)
+    char buffer[4096]; // char for string append...
+    while (true) // read until close or timeout
     {
-        ssize_t recvd = ::recv(sock, buffer, BUF_SIZE, 0);
+        ssize_t recvd = ::recv(sock, buffer, sizeof(buffer), 0);
         if (recvd < 0)
         {
             if (errno == EWOULDBLOCK || errno == EAGAIN)
-            {
-                // timeout
-                break;
-            }
+                break; // timeout
+                
             std::cerr << "recv failed: " << std::strerror(errno) << "\n";
             return false;
         }
         if (recvd == 0)
-        {
-            // remote closed
-            break;
-        }
+            break; // remote closed
 
         out.append(buffer, buffer + recvd);
-        // continue reading until close or timeout
     }
 
     return true;

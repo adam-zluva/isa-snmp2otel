@@ -12,14 +12,28 @@ public:
     TCPClient();
     ~TCPClient();
 
+    /// @brief Connects to the specified host and port
+    /// @param host the host address
+    /// @param port the port
+    /// @return true on success, false otherwise
     bool connect(const std::string& host, const std::string& port);
+
+    /// @brief Closes the connection
     void disconnect();
 
-    // send entire buffer, returns false on failure
+    /// @return true if connected, false otherwise
+    bool isConnected() const { return sock >= 0 && addrInfo != nullptr; }
+
+    /// @brief Sends the data
+    /// @param data the data to send
+    /// @return true on success, false otherwise
     bool sendAll(const std::string& data);
 
-    // receive until remote close or timeout (ms). Returns false on error.
-    bool receiveAll(std::string& out, int timeoutMs = 2000);
+    /// @brief Receives data
+    /// @param out the received data
+    /// @param timeout timeout in milliseconds
+    /// @return true on success, false on failure or timeout
+    bool receiveAll(std::string& out, uint32_t timeout);
 
 private:
     int sock;

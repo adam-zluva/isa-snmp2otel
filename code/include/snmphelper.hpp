@@ -8,7 +8,7 @@
 #include <cstdint>
 
 
-// A single variable binding from a response
+/// @brief Holds SNMP metric data
 struct SNMPVarBind
 {
     std::string oid;
@@ -18,8 +18,9 @@ struct SNMPVarBind
     std::string toString() const;
 };
 
-// Decoded SNMP response
-struct SNMPResponse {
+/// @brief Representation of the SNMP response
+struct SNMPResponse
+{
     uint64_t requestId;
     uint64_t errorStatus;
     uint64_t errorIndex;
@@ -31,6 +32,15 @@ struct SNMPResponse {
 class SNMPHelper
 {
 public:
+    /// @brief Builds an SNMP GET request
+    /// @param community the community string
+    /// @param requestId the request ID
+    /// @param oids OIDs to request
+    /// @return the encoded SNMP GET request
     static std::vector<uint8_t> buildSNMPGet(const std::string& community, uint32_t requestId, const std::vector<std::string>& oids);
+
+    /// @brief Decodes an SNMP response
+    /// @param data the encoded SNMP response
+    /// @return the decoded SNMP data as SNMPResponse
     static SNMPResponse decodeResponse(const std::vector<uint8_t>& data);
 };

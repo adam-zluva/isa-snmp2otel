@@ -17,13 +17,16 @@ public:
     /// @return true on success, false on failure
     bool connect();
 
-    /// @brief Disconnects the UDP connection
+    /// @brief Closes the connection
     void disconnect();
+
+    /// @return true if connected, false otherwise (duh)
+    bool isConnected() const { return sock >= 0 && addrInfo != nullptr; }
 
     /// @brief Sends a UDP request and waits for a response
     /// @param request The data to send
     /// @param response The received data
-    /// @param timeoutMs Timeout in milliseconds
+    /// @param timeout Timeout in milliseconds
     /// @return true on success, false on failure or timeout
     bool sendAndReceive(const std::vector<uint8_t>& request,
                         std::vector<uint8_t>& response,

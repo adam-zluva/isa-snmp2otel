@@ -72,13 +72,13 @@ bool UDPClient::sendAndReceive(const std::vector<uint8_t>& request,
 {
     response.clear();
 
-    if (sock < 0 || addrInfo == nullptr)
+    if (!isConnected())
     {
-        std::cerr << "UDPClient not connected\n";
+        std::cerr << "UDPClient not connected" << "\n";
         return false;
     }
 
-    // tajmaut >:)
+    // timeout value
     struct timeval tv {};
     tv.tv_sec  = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;

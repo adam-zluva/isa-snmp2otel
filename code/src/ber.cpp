@@ -4,9 +4,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include <sstream>
-
 #include "ber.hpp"
 #include "tags.hpp"
+#include "utils.hpp"
 
 void BER::encodeLength(std::size_t len, std::vector<uint8_t>& out)
 {
@@ -83,7 +83,7 @@ uint64_t BER::decodeIntegerValue(const std::vector<uint8_t>& v)
     if (v.empty())
         throw std::runtime_error("BER: empty integer");
 
-    if (v.size() > 9) // guard: > 8 bytes plus possible leading zero
+    if (v.size() > 9) // 9 bytes is not supported
         throw std::runtime_error("BER: integer too large");
 
     uint64_t out = 0;
@@ -97,58 +97,45 @@ uint64_t BER::decodeIntegerValue(const std::vector<uint8_t>& v)
 void BER::encodeOIDValue(const std::string& dotted, std::vector<uint8_t>& out)
 {
     std::vector<uint32_t> arcs;
-    uint64_t acc = 0;
-    bool inNumber = false;
+    std::string token;
+    std::istringstream ss(dotted);
 
-    for (char c : dotted)
+    while (std::getline(ss, token, '.'))
     {
-        if (c == '.')
-        {
-            if (!inNumber)
-                throw std::runtime_error("BER: empty arc in OID");
-            arcs.push_back(static_cast<uint32_t>(acc));
-            acc = 0;
-            inNumber = false;
-        } else if (c >= '0' && c <= '9')
-        {
-            inNumber = true;
-            acc = acc * 10 + static_cast<uint32_t>(c - '0');
-            if (acc > ULL_MAX)
-                throw std::runtime_error("BER: OID arc too large");
-        } else
-            throw std::runtime_error("BER: invalid OID");
+        if (token.empty())
+            throw std::runtime_error("Empty arc in OID");
+        if (!Utils::isNumeric(token))
+            throw std::runtime_error("Invalid OID arc");
+
+        uint32_t val = Utils::atou32(token.c_str());
+        arcs.push_back(val);
     }
-    if (inNumber)
-        arcs.push_back(static_cast<uint32_t>(acc));
 
     if (arcs.size() < 2)
-        throw std::runtime_error("BER: OID must have ≥ 2 arcs");
+        throw std::runtime_error("OID must have >= 2 arcs");
 
     uint32_t first = arcs[0];
     uint32_t second = arcs[1];
-
     if (first > 2 || second > 39)
-        throw std::runtime_error("BER: invalid first two OID arcs");
+        throw std::runtime_error("Invalid first two OID arcs");
 
     out.push_back(static_cast<uint8_t>(40u * first + second));
 
-    for (std::size_t i = 2; i < arcs.size(); i++)
+    // Encode remaining arcs in base-128 (MSB bit set for continuation)
+    for (std::size_t i = 2; i < arcs.size(); ++i)
     {
         uint32_t v = arcs[i];
-        uint8_t tmp[5];
-        int n = 0;
-
+        std::vector<uint8_t> tmp;
         do
         {
-            tmp[n++] = static_cast<uint8_t>(v & 0x7F);
+            tmp.push_back(static_cast<uint8_t>(v & 0x7F));
             v >>= 7;
         } while (v > 0);
 
-        for (int j = n - 1; j >= 0; j--)
+        for (int j = static_cast<int>(tmp.size()) - 1; j >= 0; j--)
         {
             uint8_t byte = tmp[j];
-            if (j != 0)
-                byte |= 0x80;
+            if (j != 0) byte |= 0x80;
             out.push_back(byte);
         }
     }
@@ -157,7 +144,7 @@ void BER::encodeOIDValue(const std::string& dotted, std::vector<uint8_t>& out)
 std::string BER::decodeOIDValue(const std::vector<uint8_t>& v)
 {
     if (v.empty())
-        throw std::runtime_error("BER: empty OID");
+        throw std::runtime_error("Empty OID");
 
     std::ostringstream s;
 
@@ -179,7 +166,7 @@ std::string BER::decodeOIDValue(const std::vector<uint8_t>& v)
     }
 
     if (acc != 0)
-        throw std::runtime_error("BER: truncated OID base-128 arc");
+        throw std::runtime_error("Truncated OID base-128 arc");
 
     return s.str();
 }

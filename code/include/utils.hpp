@@ -11,6 +11,7 @@
 #include <vector>
 #include "context.hpp"
 
+// << operator for vector for printing
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "[";
@@ -22,6 +23,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     return os;
 }
 
+/// @brief Helper class for random utils
 class Utils
 {
 public:
@@ -57,6 +59,9 @@ public:
         log("----------");
     }
 
+    /// @brief Converts an integer to a hexadecimal string
+    /// @param value the integer value
+    /// @return the hexadecimal string
     static inline std::string intToHexString(uint64_t value)
     {
         std::ostringstream s;
@@ -64,6 +69,9 @@ public:
         return s.str();
     }
 
+    /// @brief Converts a vector of bytes to a hexadecimal string
+    /// @param data the byte vector
+    /// @return the hexadecimal string
     static inline std::string hexVectorToString(const std::vector<uint8_t>& data)
     {
         std::ostringstream s;
@@ -71,19 +79,11 @@ public:
         {
             s << intToHexString(data[i]) << " ";
 
-            // print it out in rows of 16 bytes
-            if ((i + 1) % 16 == 0)
+            // rows of 16 bytes
+            if (i % 15 == 0)
                 s << "\n";
         }
         return s.str();
-    }
-
-
-    static inline void printHex(const std::vector<uint8_t>& data)
-    {
-        if (!Context::getInstance().args.verbose) return;
-        std::cout << "Hex dump (" << data.size() << " bytes):\n";
-        std::cout << hexVectorToString(data) << "\n";
     }
 
 private:

@@ -16,12 +16,16 @@
 
 const std::string APP_NAME = "snmp2otel";
 
-static bool g_stopRequested = false;
+static bool g_stopRequested = false; // signals to stop the send loop
+
+/// @brief Signal handler to intercept ctrl+c signals
 static void signalHandler(int)
 {
     g_stopRequested = true;
 }
 
+/// @brief Helper function to parse cli args
+/// @return Arguments struct containing the parsed arguments
 Arguments parseArguments(int argc, char** argv)
 {
     Arguments arguments;
@@ -31,6 +35,9 @@ Arguments parseArguments(int argc, char** argv)
     return arguments;
 }
 
+/// @brief Helper function to load OIDS from file
+/// @param file path to the OIDs file
+/// @return Vector of filtered OIDs on success, otherwise nullopt
 std::optional<std::vector<std::string>> tryLoadOIDs(const std::string& file)
 {
     try {
@@ -51,6 +58,7 @@ int main(int argc, char** argv)
 
     Context::getInstance(&args); // To initialize Context singleton
 
+    // To be fancy, because I like being extra
     Utils::log("Running ", APP_NAME, " with arguments:");
     Utils::log(args.toString());
     Utils::logSeparator();
@@ -62,46 +70,23 @@ int main(int argc, char** argv)
         return 1;
     auto oids = oidsOpt.value();
     Utils::log("Loaded OIDs: ", oids);
-    // Filter to scalar OIDs ending with .0 as required
-    std::vector<std::string> scalarOids;
-    for (const auto &o : oids)
-    {
-        if (o.size() >= 2 && o.rfind(".0") == o.size() - 2)
-            scalarOids.push_back(o);
-        else
-            Utils::log("Ignoring non-scalar OID (not ending with .0): ", o);
-    }
-
-    if (scalarOids.empty())
-    {
-        std::cerr << "No scalar OIDs (ending with .0) to poll.\n";
-        return 1;
-    }
-    oids = scalarOids;
     Utils::logSeparator();
     
     // So the program doesn't end unexpectedly and properly cleans up
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
 
-    // Create UDP client
+    // Create UDP client for SNMP
     UDPClient udpClient(args.target, args.port);
     if (!udpClient.connect())
-    {
-        std::cerr << "Failed to connect to " << args.target << ":" << args.port << '\n';
         return 1;
-    }
 
-    // Create OTEL exporter on stack (std::optional) if endpoint provided
-    std::optional<OTELExporter> exporter;
-    if (args.hasEndpoint)
+    // Create OTEL exporter
+    OTELExporter exporter(args.endpoint);
+    if (!exporter.isValid())
     {
-        exporter.emplace(args.endpoint);
-        if (!exporter->isValid())
-        {
-            std::cerr << "Invalid OTEL endpoint: " << args.endpoint << '\n';
-            exporter.reset();
-        }
+        std::cerr << "Invalid OTEL endpoint: " << args.endpoint << '\n';
+        return 1;
     }
 
     // Main loop
@@ -112,34 +97,31 @@ int main(int argc, char** argv)
     while (!g_stopRequested && attempt <  args.retries)
     {
         auto requestPDU = SNMPHelper::buildSNMPGet(args.community, requestId++, oids);
-            std::vector<uint8_t> response;
-            Utils::log("Sending SNMP request with requestId=", requestId);
-            if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
+        std::vector<uint8_t> response;
+        Utils::log("Sending SNMP request with requestId=", requestId);
+        if (!udpClient.sendAndReceive(requestPDU, response, args.timeout))
+        {
+            attempt++;
+            std::cerr << "Failed to send/receive SNMP request" << "\n";
+
+            if (attempt >= args.retries)
             {
-                attempt++;
-                std::cerr << "Failed to send/receive SNMP request" << "\n";
-
-                if (attempt >= args.retries)
-                {
-                    Utils::log("Failed to reach target in ", args.retries, " retries");
-                }
+                Utils::log("Failed to reach target in ", args.retries, " retries");
             }
-            else
+        }
+        else
+        {
+            attempt = 0;
+            Utils::log("Received SNMP response of size ", response.size());
+
+            auto snmpResponse = SNMPHelper::decodeResponse(response);
+            Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
+
+            if (!exporter.exportMetrics(snmpResponse, args.target))
             {
-                attempt = 0;
-                Utils::log("Received SNMP response of size ", response.size());
-
-                auto snmpResponse = SNMPHelper::decodeResponse(response);
-                Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
-
-                if (exporter.has_value())
-                {
-                    if (!exporter->exportMetrics(snmpResponse, args.target))
-                    {
-                        std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
-                    }
-                }
+                std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
             }
+        }
 
         if (!g_stopRequested && attempt < args.retries)
             sleep(args.interval);

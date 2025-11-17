@@ -7,7 +7,8 @@
 
 #include "arguments.hpp"
 
-struct Context
+/// @brief Singleton struct that holds things needed globally
+struct Context // well this ended up obsolete... xd
 {
     const Arguments args;
 
