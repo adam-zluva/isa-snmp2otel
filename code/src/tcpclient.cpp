@@ -23,14 +23,14 @@ TCPClient::~TCPClient()
 
 bool TCPClient::connect(const std::string& host, const std::string& port)
 {
-    if (isConnected())
-        return true; // already connected
+    this->host = host;
+    this->port = port;
 
     struct addrinfo hints {};
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    int rc = getaddrinfo(host.c_str(), port.c_str(), &hints, &addrInfo);
+    int rc = getaddrinfo(this->host.c_str(), this->port.c_str(), &hints, &addrInfo);
     if (rc != 0)
     {
         std::cerr << "getaddrinfo failed: " << gai_strerror(rc) << "\n";
