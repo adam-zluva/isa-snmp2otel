@@ -1,11 +1,2 @@
 # System uptime
 1.3.6.1.2.1.1.3.0
-
-# noSuchObject
-1.2.2.2.2.2.1.1.0
-
-# hrMemorySize
-1.3.6.1.2.1.25.2.2.0
-
-# ifNumber
-1.3.6.1.2.1.2.1.0

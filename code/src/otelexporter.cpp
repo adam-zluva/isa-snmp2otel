@@ -116,7 +116,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
         json metric;
         metric["name"] = sanitizeMetricName(vb.oid);
         metric["description"] = "SNMP metric for OID " + vb.oid;
-        metric["unit"] = "nope"; // i dont't have energy to deal with units ://
+        metric["unit"] = "nope"; // not really sure what should be here :// (maybe just gauge, but not sure)
 
         metric["gauge"]["dataPoints"] = json::array();
         json dp;

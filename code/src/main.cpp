@@ -72,6 +72,11 @@ int main(int argc, char** argv)
     if (!oidsOpt.has_value())
         return 1;
     auto oids = oidsOpt.value();
+    if (oids.empty())
+    {
+        std::cerr << "No valid OIDs loaded from file\n";
+        return 1;
+    }
     Utils::log("Loaded OIDs: ", oids);
     Utils::logSeparator();
     
@@ -97,7 +102,7 @@ int main(int argc, char** argv)
     Utils::logSeparator();
     uint32_t requestId = 0;
     size_t attempt = 0;
-    while (!g_stopRequested && attempt <  args.retries)
+    while (!g_stopRequested && attempt < args.retries)
     {
         try
         {
@@ -116,16 +121,15 @@ int main(int argc, char** argv)
             }
             else
             {
-                attempt = 0;
                 Utils::log("Received SNMP response of size ", response.size());
 
                 auto snmpResponse = SNMPHelper::decodeResponse(response);
                 Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
 
                 if (!exporter.exportMetrics(snmpResponse, args.target, args.timeout))
-                {
                     std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
-                }
+                else
+                    attempt = 0;
             }
         } catch (const std::exception& ex) 
         {
