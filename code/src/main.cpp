@@ -14,8 +14,6 @@
 #include "snmphelper.hpp"
 #include "otelexporter.hpp"
 
-const std::string APP_NAME = "snmp2otel";
-
 static bool g_stopRequested = false; // signals to stop the send loop
 
 /// @brief Signal handler to intercept ctrl+c signals
@@ -117,7 +115,7 @@ int main(int argc, char** argv)
             auto snmpResponse = SNMPHelper::decodeResponse(response);
             Utils::log("Decoded SNMP Response:\n", snmpResponse.toString());
 
-            if (!exporter.exportMetrics(snmpResponse, args.target))
+            if (!exporter.exportMetrics(snmpResponse, args.target, args.timeout))
             {
                 std::cerr << "Failed to export metrics to OTEL endpoint" << "\n";
             }

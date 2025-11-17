@@ -24,7 +24,7 @@ public:
     /// @param resp SNMP response
     /// @param target the SNMP agent address
     /// @return true on success, false on failure
-    bool exportMetrics(const SNMPResponse& resp, const std::string& target);
+    bool exportMetrics(const SNMPResponse& resp, const std::string& target, uint32_t timeout);
 
 private:
     /// @brief Parses the OTEL endpoint address

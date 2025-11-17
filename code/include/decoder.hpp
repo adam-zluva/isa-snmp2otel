@@ -42,16 +42,6 @@ public:
     /// @return the decoded OID string
     std::string readOID();
 
-    /// @brief Decodes an integer
-    /// @param v the encoded bytes
-    /// @return the decoded integer
-    static uint64_t decodeIntegerValue(const std::vector<uint8_t>& v);
-
-    /// @brief Decodes an OID
-    /// @param v the encoded bytes
-    /// @return the decoded OID string
-    static std::string decodeOIDValue(const std::vector<uint8_t>& v);
-
 private:
     std::vector<uint8_t> buf;
     size_t pos;

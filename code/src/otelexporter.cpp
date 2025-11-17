@@ -9,7 +9,7 @@
 #include "json.hpp"
 #include "utils.hpp"
 
-using json = nlohmann::json;
+using json = nlohmann::json; // Library from https://github.com/nlohmann/json
 
 OTELExporter::OTELExporter(const std::string& endpoint)
     : endpoint(endpoint), host(), port(), path(), valid(false)
@@ -22,6 +22,7 @@ OTELExporter::~OTELExporter()
     client.disconnect();
 }
 
+// too hardcoded ://
 bool OTELExporter::parseEndpoint(const std::string& endpoint)
 {
     const std::string http = "http://";
@@ -65,6 +66,8 @@ bool OTELExporter::ensureConnection()
     return client.connect(host, port);
 }
 
+// Don't really understand why this is necessary but other students told me to do this
+// and LLMs agreed so...
 static std::string sanitizeMetricName(const std::string& oid)
 {
     std::string out;
@@ -76,7 +79,7 @@ static std::string sanitizeMetricName(const std::string& oid)
     return "snmp_" + out;
 }
 
-bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& target)
+bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& target, uint32_t timeout)
 {
     if (!valid)
         return false;
@@ -87,13 +90,14 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
         return false;
     }
 
-    // Build simple OTLP/HTTP JSON for metrics (resourceMetrics -> scopeMetrics -> metrics)
+    // OTLP/HTTP JSON
+    // (resourceMetrics -> scopeMetrics -> metrics)
     json root;
     root["resourceMetrics"] = json::array();
 
     json resource;
     resource["resource"]["attributes"] = json::array({
-        { {"key", "service.name"}, {"value", { {"stringValue", "snmp2otel"} } } },
+        { {"key", "service.name"}, {"value", { {"stringValue", APP_NAME} } } },
         { {"key", "target"}, {"value", { {"stringValue", target} } } }
     });
 
@@ -103,7 +107,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
     scopeMetric["scope"] = json::object();
     scopeMetric["metrics"] = json::array();
 
-    // timestamp in nanos
+    // timestamp in nano secodns
     auto now = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
 
@@ -122,21 +126,19 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
         });
         dp["timeUnixNano"] = std::to_string(ns);
 
-        // Try convert to double; if fails, send 0.0 and keep original value as attribute
+        // Try convert to double - if fails, send 0.0 and keep original value
         double valDouble = 0.0;
         bool ok = true;
-        try {
-            // allow strings like "123" or "123.4"
+        try
+        {
             valDouble = std::stod(vb.value);
-        } catch (...) {
+        } catch (...)
+        {
             ok = false;
         }
 
-        if (!ok)
-        {
-            // include original string as attribute so value isn't lost
+        if (!ok) // include the original string as an attribute so the value isn't lost
             dp["attributes"].push_back({ {"key", "value"}, {"value", { {"stringValue", vb.value} } } });
-        }
 
         dp["asDouble"] = valDouble;
         metric["gauge"]["dataPoints"].push_back(dp);
@@ -169,7 +171,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
     }
 
     std::string response;
-    if (!client.receiveAll(response, 2000))
+    if (!client.receiveAll(response, timeout))
     {
         std::cerr << "OTEL exproter failed to read HTTP response" << "\n";
         client.disconnect();

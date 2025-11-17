@@ -3,6 +3,8 @@
 
 #pragma once
 
+#define APP_NAME "snmp2otel"
+
 #include <iostream>
 #include <string>
 #include <cstdint>

@@ -10,6 +10,7 @@
 #include "decoder.hpp"
 #include "tags.hpp"
 #include "utils.hpp"
+#include "ber.hpp"
 
 std::vector<uint8_t> SNMPHelper::buildSNMPGet(const std::string& community, uint32_t requestId, const std::vector<std::string>& oids)
 {
@@ -75,7 +76,7 @@ SNMPResponse SNMPHelper::decodeResponse(const std::vector<uint8_t>& data)
 
     // version
     uint64_t version = msgDec.readInteger();
-    (void)version; // currently unused, but consumed
+    (void)version; // unused, just assume it's v2c
 
     // community
     std::string community = msgDec.readOctetString();
@@ -125,13 +126,13 @@ SNMPResponse SNMPHelper::decodeResponse(const std::vector<uint8_t>& data)
             vb.value = std::string(vval.begin(), vval.end());
         } else if (vtag == TAG_INTEGER || vtag == TAG_GAUGE || vtag == TAG_TIMETICKS)
         {
-            vb.value = std::to_string(Decoder::decodeIntegerValue(vval));
+            vb.value = std::to_string(BER::decodeIntegerValue(vval));
         } else if (vtag == TAG_OID)
         {
-            vb.value = Decoder::decodeOIDValue(vval);
+            vb.value = BER::decodeOIDValue(vval);
         } else
         {
-            // fallback: hex representation
+            // fallback hex representation
             auto hexString = Utils::hexVectorToString(vval);
             vb.value = hexString;
         }
@@ -142,7 +143,6 @@ SNMPResponse SNMPHelper::decodeResponse(const std::vector<uint8_t>& data)
     return response;
 }
 
-// Stringify helpers
 std::string SNMPVarBind::toString() const
 {
     std::ostringstream ss;
@@ -161,8 +161,7 @@ std::string SNMPVarBind::toString() const
     {
         ss << "noSuchObject";
     } else
-    {
-        // edge case print tag and hex value
+    { //fallback hex representation
         ss << "[tag=0x" << Utils::intToHexString(tag) << "] " << value;
     }
 

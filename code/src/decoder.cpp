@@ -42,11 +42,6 @@ void Decoder::nextTLV(uint8_t &tag, std::vector<uint8_t>& value)
     pos += len;
 }
 
-uint64_t Decoder::decodeIntegerValue(const std::vector<uint8_t>& v)
-{
-    return BER::decodeIntegerValue(v);
-}
-
 uint64_t Decoder::readInteger()
 {
     uint8_t tag;
@@ -76,11 +71,6 @@ void Decoder::readNull()
         throw std::runtime_error("Decoder: expected NULL tag");
     if (!val.empty())
         throw std::runtime_error("Decoder: NULL with non-empty content");
-}
-
-std::string Decoder::decodeOIDValue(const std::vector<uint8_t>& v)
-{
-    return BER::decodeOIDValue(v);
 }
 
 std::string Decoder::readOID()

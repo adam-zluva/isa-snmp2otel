@@ -26,7 +26,7 @@ void BER::encodeLength(std::size_t len, std::vector<uint8_t>& out)
     }
 
     out.push_back(static_cast<uint8_t>(0x80 | n));
-    for (int i = n - 1; i >= 0; --i)
+    for (int i = n - 1; i >= 0; i--)
     {
         out.push_back(buf[i]);
     }
@@ -35,7 +35,7 @@ void BER::encodeLength(std::size_t len, std::vector<uint8_t>& out)
 std::size_t BER::parseLength(const std::vector<uint8_t>& b, size_t &p)
 {
     if (p >= b.size())
-        throw std::runtime_error("BER: truncated length");
+        throw std::runtime_error("Truncated length");
 
     uint8_t first = b[p++];
     if ((first & 0x80) == 0)
@@ -45,11 +45,11 @@ std::size_t BER::parseLength(const std::vector<uint8_t>& b, size_t &p)
 
     uint8_t n = first & 0x7F;
     if (n == 0)
-        throw std::runtime_error("BER: indefinite lengths not supported");
+        throw std::runtime_error("Indefinite lengths not supported");
     if (n > 8)
-        throw std::runtime_error("BER: length too large");
+        throw std::runtime_error("Length too large");
     if (p + n > b.size())
-        throw std::runtime_error("BER: truncated length bytes");
+        throw std::runtime_error("Truncated length bytes");
 
     std::size_t len = 0;
     for (uint8_t i = 0; i < n; ++i)
@@ -81,10 +81,10 @@ void BER::encodeIntegerValue(uint64_t v, std::vector<uint8_t>& out)
 uint64_t BER::decodeIntegerValue(const std::vector<uint8_t>& v)
 {
     if (v.empty())
-        throw std::runtime_error("BER: empty integer");
+        throw std::runtime_error("Empty integer");
 
     if (v.size() > 9) // 9 bytes is not supported
-        throw std::runtime_error("BER: integer too large");
+        throw std::runtime_error("Integer too large");
 
     uint64_t out = 0;
     for (uint8_t b : v)
