@@ -120,7 +120,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
 
         metric["gauge"]["dataPoints"] = json::array();
         json dp;
-        // Always include oid attribute
+        // OID attribute
         dp["attributes"] = json::array({
             { {"key", "oid"}, {"value", { {"stringValue", vb.oid} } } }
         });
@@ -137,7 +137,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
             ok = false;
         }
 
-        if (!ok) // include the original string as an attribute so the value isn't lost
+        if (!ok) // include the original value at least
             dp["attributes"].push_back({ {"key", "value"}, {"value", { {"stringValue", vb.value} } } });
 
         dp["asDouble"] = valDouble;
@@ -151,7 +151,7 @@ bool OTELExporter::exportMetrics(const SNMPResponse& resp, const std::string& ta
 
     std::string body = root.dump();
 
-    // Build HTTP request
+    // The HTTP request
     std::ostringstream req;
     req << "POST " << path << " HTTP/1.1" << "\r\n";
     req << "Host: " << host << "\r\n";
