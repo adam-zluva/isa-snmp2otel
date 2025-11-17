@@ -76,7 +76,7 @@ SNMPResponse SNMPHelper::decodeResponse(const std::vector<uint8_t>& data)
 
     // version
     uint64_t version = msgDec.readInteger();
-    (void)version; // unused, just assume it's v2c
+    (void)version; // I'll just assume it's v2c
 
     // community
     std::string community = msgDec.readOctetString();
