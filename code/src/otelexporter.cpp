@@ -1,11 +1,11 @@
 /// ISA ZS 2025
-/// xzluva01
+/// xzluva01 Adam Žluva
 
 #include <iostream>
 #include <sstream>
 #include <chrono>
 
-#include "otel_exporter.hpp"
+#include "otelexporter.hpp"
 #include "json.hpp"
 #include "utils.hpp"
 

@@ -1,5 +1,5 @@
 /// ISA ZS 2025
-/// xzluva01
+/// xzluva01 Adam Žluva
 
 #include <iostream>
 #include <csignal>
@@ -12,7 +12,7 @@
 #include "oidreader.hpp"
 #include "udpclient.hpp"
 #include "snmphelper.hpp"
-#include "otel_exporter.hpp"
+#include "otelexporter.hpp"
 
 const std::string APP_NAME = "snmp2otel";
 

@@ -1,5 +1,5 @@
 /// ISA ZS 2025
-/// xzluva01
+/// xzluva01 Adam Žluva
 
 #include <stdexcept>
 #include <algorithm>

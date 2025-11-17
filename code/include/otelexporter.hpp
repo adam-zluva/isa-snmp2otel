@@ -1,3 +1,6 @@
+/// ISA ZS 2025
+/// xzluva01 Adam Žluva
+
 #pragma once
 
 #include <string>
