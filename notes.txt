@@ -2,3 +2,7 @@ Pokud je parametr nevalidní a jedná se o volitelný, použije se defaultní ho
 
 Jestliže je v OID seznamu nevalidní OID, přeskočí se.
 Jesltiže v OID bude mezera, odebere se; tedy "1. 0.2.3  .5" se převede na "1.0.2.3.5" a bude validní.
+
+Při testování se mi nepodařilo otevřít SNMP na portu 161
+
+Nereportuje se unit do OTEL
